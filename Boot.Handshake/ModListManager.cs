@@ -30,13 +30,34 @@ namespace Boot.Handshake
 		private readonly ConcurrentDictionary<IClient, ModList> lists = new();
 
 		/// <summary>
+		/// Add a mod list.
+		/// </summary>
+		/// <param name="client">The client to add a mod list to.</param>
+		/// <param name="list">The mod list that will be added.</param>
+		/// <returns>If the mod list was register or if another list was already registered.</returns>
+		public bool Add(IClient client, ModList list)
+		{
+			return this.lists.TryAdd(client, list);
+		}
+
+		/// <summary>
 		/// Get the ModList for a given client.
 		/// </summary>
 		/// <param name="client">The client to get the modlist of.</param>
-		/// <returns>The modlist of a client.</returns>
-		public ModList Get(IClient client)
+		/// <returns>The modlist of a client or null if there is no list.</returns>
+		public ModList? Get(IClient client)
 		{
-			return this.lists.GetOrAdd(client, _ => new ModList());
+			return this.lists.TryGetValue(client, out var result) ? result : null;
+		}
+
+		/// <summary>
+		/// Check if a certain player has a mod list.
+		/// </summary>
+		/// <param name="client">The client you want to get a mod list from.</param>
+		/// <returns>If the provided client has an mod list.</returns>
+		public bool ContainsList(IClient client)
+		{
+			return this.lists.ContainsKey(client);
 		}
 
 		/// <summary>

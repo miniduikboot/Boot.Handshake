@@ -40,6 +40,7 @@ namespace Boot.Handshake
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddSingleton<IEventListener, ClientEventListener>();
+			services.AddSingleton<IEventListener, GameEventListener>();
 			services.AddSingleton<ModListManager>();
 			services.AddSingleton<ReactorRootMessage>();
 		}

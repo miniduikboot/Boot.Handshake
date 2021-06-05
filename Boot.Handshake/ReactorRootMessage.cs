@@ -60,14 +60,18 @@ namespace Boot.Handshake
 					ModDeclarationMessage.Deserialize(reader, out var netId, out var id, out var version, out var side);
 					var mod = new ClientMod(netId, id, version, side);
 					this.logger.LogInformation("Mod: {@Mod}", mod);
+
 					var modlist = this.modlists.Get(client);
-					try
+					if (modlist == null)
 					{
-						modlist.RegisterMod(mod);
+						await client.DisconnectAsync(DisconnectReason.Custom, "<color=\"red\">Error BHS03:</color> Cannot accept mod declarations when initial handshake was not made").ConfigureAwait(false);
+						break;
 					}
-					catch (HandshakeException e)
+
+					var failureReason = modlist.RegisterMod(mod);
+					if (failureReason != null)
 					{
-						await client.DisconnectAsync(DisconnectReason.Custom, e.Message).ConfigureAwait(false);
+						await client.DisconnectAsync(DisconnectReason.Custom, failureReason).ConfigureAwait(false);
 					}
 
 					break;

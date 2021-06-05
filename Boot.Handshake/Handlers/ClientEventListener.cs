@@ -17,9 +17,12 @@
 
 namespace Boot.Handshake.Handlers
 {
+	using System.Collections.Concurrent;
+	using System.Diagnostics.CodeAnalysis;
 	using Boot.Handshake.Messages;
 	using Impostor.Api.Events;
 	using Impostor.Api.Events.Client;
+	using Impostor.Api.Net;
 	using Impostor.Api.Net.Messages;
 	using Impostor.Api.Utils;
 	using Microsoft.Extensions.Logging;
@@ -32,6 +35,10 @@ namespace Boot.Handshake.Handlers
 		private readonly IServerEnvironment environment;
 		private readonly ILogger logger;
 		private readonly IMessageWriterProvider writerProvider;
+		private readonly ModListManager listManager;
+
+		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
+		private readonly ConcurrentDictionary<IHazelConnection, int> announcedMods = new();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ClientEventListener"/> class.
@@ -39,33 +46,40 @@ namespace Boot.Handshake.Handlers
 		/// <param name="environment">Get the server environment, which has the version.</param>
 		/// <param name="logger">Register a Logger.</param>
 		/// <param name="writerProvider">Get the MessageWriter pool.</param>
-		public ClientEventListener(IServerEnvironment environment, ILogger<ClientEventListener> logger, IMessageWriterProvider writerProvider)
+		/// <param name="listManager">Get the Mod List Manager.</param>
+		public ClientEventListener(IServerEnvironment environment, ILogger<ClientEventListener> logger, IMessageWriterProvider writerProvider, ModListManager listManager)
 		{
 			this.environment = environment;
 			this.logger = logger;
 			this.writerProvider = writerProvider;
+			this.listManager = listManager;
 		}
 
 		/// <summary>
 		/// Check for a reactor handshake and if present, give server response.
 		/// </summary>
-		/// <param name="ev">The client handshake.</param>
+		/// <param name="ev">Event containing the client handshake.</param>
 		[EventListener]
 		public async void OnClientConnection(IClientConnectionEvent ev)
 		{
 			var reader = ev.HandshakeData;
 
 			// Reactor handshake is attached to the initial handshake, check if there is data after the vanilla handshake.
-			if (reader.Length - reader.Position > 0)
-			{
-				ModdedHandshakeC2S.Deserialize(reader, out byte protocolVersion, out int modCount);
-				this.logger.LogInformation("Proto version: {Version}, Mod Count: {ModCount}", protocolVersion, modCount);
-			}
-			else
+			if (reader.Length - reader.Position == 0)
 			{
 				this.logger.LogInformation("No Reactor Handshake detected");
 				return;
 			}
+
+			ModdedHandshakeC2S.Deserialize(reader, out byte protocolVersion, out int modCount);
+			this.logger.LogInformation("Reactor Protocol version: {Version}, Mod Count: {ModCount}", protocolVersion, modCount);
+
+			if (protocolVersion != 1)
+			{
+				return; // We don't know what to do with newer versions
+			}
+
+			_ = this.announcedMods.TryAdd(ev.Connection, modCount);
 
 			var writer = this.writerProvider.Get(MessageType.Reliable);
 			writer.StartMessage(0xff);
@@ -74,6 +88,19 @@ namespace Boot.Handshake.Handlers
 			ModdedHandshakeS2C.Serialize(writer, "Impostor", this.environment.Version, 0);
 			writer.EndMessage();
 			await ev.Connection.SendAsync(writer).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Link handshake data from connection to the correct client.
+		/// </summary>
+		/// <param name="ev">Event containing the client.</param>
+		[EventListener]
+		public void OnClientConnected(IClientConnectedEvent ev)
+		{
+			if (this.announcedMods.TryRemove(ev.Connection, out var modCount))
+			{
+				_ = this.listManager.Add(ev.Client, new ModList(modCount));
+			}
 		}
 	}
 }
