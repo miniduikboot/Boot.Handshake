@@ -17,6 +17,7 @@
 
 namespace Boot.Handshake
 {
+	using Boot.Handshake.Handlers;
 	using Impostor.Api.Events;
 	using Impostor.Api.Plugins;
 	using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +39,9 @@ namespace Boot.Handshake
 		/// <inheritdoc/>
 		public void ConfigureServices(IServiceCollection services)
 		{
-			_ = services.AddSingleton<IEventListener, ClientEventListener>();
+			services.AddSingleton<IEventListener, ClientEventListener>();
+			services.AddSingleton<ModListManager>();
+			services.AddSingleton<ReactorRootMessage>();
 		}
 	}
 }

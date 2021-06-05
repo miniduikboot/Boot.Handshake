@@ -17,6 +17,8 @@
 
 namespace Boot.Handshake
 {
+	using System.Threading.Tasks;
+	using Impostor.Api.Net.Custom;
 	using Impostor.Api.Plugins;
 
 	/// <summary>
@@ -25,5 +27,25 @@ namespace Boot.Handshake
 	[ImpostorPlugin("at.duikbo.handshake")]
 	internal class HandshakePlugin : PluginBase
 	{
+		private readonly ICustomMessageManager<ICustomRootMessage> rootMessageManager;
+		private readonly ReactorRootMessage reactorRootMessage;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="HandshakePlugin"/> class.
+		/// </summary>
+		/// <param name="rootMessageManager">Manager of the Root Messages.</param>
+		/// <param name="reactorRootMessage">The root message we want to register.</param>
+		public HandshakePlugin(ICustomMessageManager<ICustomRootMessage> rootMessageManager, ReactorRootMessage reactorRootMessage)
+		{
+			this.rootMessageManager = rootMessageManager;
+			this.reactorRootMessage = reactorRootMessage;
+		}
+
+		/// <inheritdoc/>
+		public override ValueTask EnableAsync()
+		{
+			_ = this.rootMessageManager.Register(this.reactorRootMessage);
+			return default;
+		}
 	}
 }

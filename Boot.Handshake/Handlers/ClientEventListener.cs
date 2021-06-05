@@ -15,7 +15,7 @@
 // along with Boot.Handshake. If not, see https://www.gnu.org/licenses/
 // </copyright>
 
-namespace Boot.Handshake
+namespace Boot.Handshake.Handlers
 {
 	using Boot.Handshake.Messages;
 	using Impostor.Api.Events;
