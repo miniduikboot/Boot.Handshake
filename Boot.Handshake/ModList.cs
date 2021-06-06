@@ -17,9 +17,7 @@
 
 namespace Boot.Handshake
 {
-	using System;
 	using System.Collections.Concurrent;
-	using System.Diagnostics.CodeAnalysis;
 	using Boot.Handshake.Enums;
 	using Boot.Handshake.Extensions;
 	using Microsoft.Extensions.Logging;
@@ -111,7 +109,7 @@ namespace Boot.Handshake
 					this.logger.LogDebug(
 						"BHS22: Version check for {modId} failed ({modIdVersion} is not {otherModVersion}).", mod.Id, mod.Version, otherMod.Version);
 
-					reason = ErrorCode.BSH22.GetClientMessage(mod.Id, mod.Version, otherMod.Version);
+					reason = ErrorCode.BHS22.GetClientMessage(mod.Id, mod.Version, otherMod.Version);
 					return false;
 				}
 

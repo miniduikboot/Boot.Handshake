@@ -19,6 +19,7 @@ namespace Boot.Handshake
 {
 	using System.Threading.Tasks;
 	using Boot.Handshake.Enums;
+	using Boot.Handshake.Extensions;
 	using Boot.Handshake.Messages;
 	using Impostor.Api.Innersloth;
 	using Impostor.Api.Net;
@@ -64,7 +65,7 @@ namespace Boot.Handshake
 					var modList = this.modlists.Get(client);
 					if (modList == null)
 					{
-						await client.DisconnectAsync(DisconnectReason.Custom, "<color=\"red\">Error BHS03:</color> Cannot accept mod declarations when initial handshake was not made").ConfigureAwait(false);
+						await client.DisconnectAsync(DisconnectReason.Custom, ErrorCode.BHS03.GetClientMessage()).ConfigureAwait(false);
 						break;
 					}
 

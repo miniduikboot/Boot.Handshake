@@ -19,6 +19,9 @@ namespace Boot.Handshake
 {
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
+	using Boot.Handshake.Enums;
+	using Boot.Handshake.Extensions;
+	using Impostor.Api.Innersloth;
 	using Impostor.Api.Net;
 	using Impostor.Api.Net.Custom;
 	using Impostor.Api.Net.Inner;
@@ -61,12 +64,14 @@ namespace Boot.Handshake
 			var senderList = this.listManager.Get(sender.Client);
 			if (senderList == null)
 			{
+				await sender.Client.DisconnectAsync(DisconnectReason.Custom, ErrorCode.BHS30.GetClientMessage()).ConfigureAwait(false);
 				return false;
 			}
 
 			var mod = senderList.MapNetId(senderNetId);
-			if (mod == null)
+			if (mod == null || mod.Side == ReactorPluginSide.ClientOnly)
 			{
+				await sender.Client.DisconnectAsync(DisconnectReason.Custom, ErrorCode.BHS31.GetClientMessage(mod == null ? senderNetId : mod.Id)).ConfigureAwait(false);
 				return false;
 			}
 

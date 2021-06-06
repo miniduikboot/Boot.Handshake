@@ -17,16 +17,13 @@
 
 namespace Boot.Handshake.Handlers
 {
-	using System;
 	using System.Collections.Concurrent;
-	using System.Diagnostics.CodeAnalysis;
 	using Boot.Handshake.Messages;
 	using Impostor.Api.Events;
 	using Impostor.Api.Events.Client;
 	using Impostor.Api.Net;
 	using Impostor.Api.Net.Messages;
 	using Impostor.Api.Utils;
-	using Microsoft.Extensions.DependencyInjection;
 	using Microsoft.Extensions.Logging;
 
 	/// <summary>
@@ -40,8 +37,7 @@ namespace Boot.Handshake.Handlers
 		private readonly ModListManager listManager;
 		private readonly ModListFactory listFactory;
 
-		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
-		private readonly ConcurrentDictionary<IHazelConnection, int> announcedMods = new();
+		private readonly ConcurrentDictionary<IHazelConnection, int> announcedMods = new ();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ClientEventListener"/> class.

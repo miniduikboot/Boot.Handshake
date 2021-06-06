@@ -34,30 +34,35 @@ namespace Boot.Handshake.Extensions
 		/// <returns>The formatted error message.</returns>
 		public static string GetClientMessage(this ErrorCode code, params object?[] parameters)
 		{
-			return code switch
+			var message = code switch
 			{
-				ErrorCode.BHS01 => string.Format("<color=\"red\">Error BHS01:</color> Mod {0} was already registered.", parameters),
+				ErrorCode.BHS01 => string.Format("Mod {0} was already registered", parameters),
 
 				ErrorCode.BHS02 => string.Format(
-					"<color=\"red\">Error BHS02:</color> Could not register {0} as mod {1} already used netId {2}.",
+					"Could not register {0} as mod {1} already used netId {2}",
 					parameters),
 
-				ErrorCode.BHS03 => throw new NotImplementedException("BHS03 is not implemented."),
+				ErrorCode.BHS03 => "Cannot accept mod declarations when initial handshake was not made",
 
-				ErrorCode.BHS10 => "<color=\"red\">Error BHS10:</color> Sorry, you cannot join an non-modded lobby with mods.",
+				ErrorCode.BHS10 => "Sorry, you cannot join an non-modded lobby with mods",
 
-				ErrorCode.BHS11 =>"<color=\"red\">Error BHS11:</color> Sorry, you cannot join a modded lobby without mods.",
+				ErrorCode.BHS11 => "Sorry, you cannot join a modded lobby without mods",
 
-				ErrorCode.BHS20 => string.Format("<color=\"red\">Error BHS20:</color> Host does not have a mod called {0}", parameters),
+				ErrorCode.BHS20 => string.Format("Host does not have a mod called {0}", parameters),
 
-				ErrorCode.BHS21 => string.Format("<color=\"red\">Error BHS21:</color> You are missing a mod called {0}", parameters),
+				ErrorCode.BHS21 => string.Format("You are missing a mod called {0}", parameters),
 
-				ErrorCode.BSH22 => string.Format(
-					"<color=\"red\">Error BHS22:</color> Version of {0} does not match: you have {1}, host has {2}.",
+				ErrorCode.BHS22 => string.Format(
+					"Version of {0} does not match: you have {1}, host has {2}",
 					parameters),
+
+				ErrorCode.BHS30 => "Custom RPC's are disabled because no modded handshake was presented",
+
+				ErrorCode.BHS31 => "Unregistered mod {1} cannot send custom RPC's",
 
 				_ => throw new ArgumentOutOfRangeException(nameof(code), code, "The specified error code is invalid.")
 			};
+			return $"<color=\"red\">Error {code}:</color> {message}";
 		}
 
 		/// <summary>

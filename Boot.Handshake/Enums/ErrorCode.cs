@@ -1,4 +1,4 @@
-// <copyright file="ErrorCodes.cs" company="miniduikboot">
+// <copyright file="ErrorCode.cs" company="miniduikboot">
 // This file is part of Boot.Handshake.
 //
 // Boot.Handshake is free software: you can redistribute it and/or modify
@@ -60,6 +60,16 @@ namespace Boot.Handshake.Enums
 		/// <summary>
 		/// Version mismatch
 		/// </summary>
-		BSH22,
+		BHS22,
+
+		/// <summary>
+		/// Custom RPC's are disabled because no modded handshake was present
+		/// </summary>
+		BHS30,
+
+		/// <summary>
+		/// Unregistered mod X cannot send Custom RPC's
+		/// </summary>
+		BHS31,
 	}
 }

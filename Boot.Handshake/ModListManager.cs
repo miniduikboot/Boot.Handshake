@@ -18,7 +18,6 @@
 namespace Boot.Handshake
 {
 	using System.Collections.Concurrent;
-	using System.Diagnostics.CodeAnalysis;
 	using Impostor.Api.Net;
 
 	/// <summary>
@@ -26,8 +25,7 @@ namespace Boot.Handshake
 	/// </summary>
 	public class ModListManager
 	{
-		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
-		private readonly ConcurrentDictionary<IClient, ModList> lists = new();
+		private readonly ConcurrentDictionary<IClient, ModList> lists = new ();
 
 		/// <summary>
 		/// Add a mod list.
