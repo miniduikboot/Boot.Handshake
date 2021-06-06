@@ -45,6 +45,7 @@ namespace Boot.Handshake
 			services.AddSingleton<ModListManager>();
 			services.AddSingleton<ReactorRootMessage>();
 			services.AddSingleton<ReactorRpc>();
+			services.AddHostedService<ModListManagerCleaner>();
 		}
 	}
 }

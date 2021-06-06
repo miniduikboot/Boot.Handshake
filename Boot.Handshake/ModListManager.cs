@@ -66,5 +66,19 @@ namespace Boot.Handshake
 		{
 			_ = this.lists.TryRemove(client, out _);
 		}
+
+		/// <summary>
+		/// Remove all clients that are no longer connected from the list.
+		/// </summary>
+		public void Cleanup()
+		{
+			foreach (IClient? client in this.lists.Keys)
+			{
+				if (client != null && (client?.Connection == null || client?.Connection.IsConnected == false))
+				{
+					this.Destroy(client!);
+				}
+			}
+		}
 	}
 }
