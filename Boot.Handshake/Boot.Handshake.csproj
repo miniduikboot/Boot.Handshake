@@ -15,9 +15,15 @@
     <!--<PackageReference Include="Impostor.Api" Version="1.3.0-ci.131" />-->
     <ProjectReference Include="$(Impostor)/src/Impostor.Api/Impostor.Api.csproj" />
 
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.23.0.32424" PrivateAssets="All"/>
-    <PackageReference Include="Roslynator.Analyzers" Version="3.1.0" PrivateAssets="All"/>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All"/>
-		<AdditionalFiles Include="../stylecop.json"/>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.23.0.32424" PrivateAssets="All" />
+    <PackageReference Include="Roslynator.Analyzers" Version="3.1.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+		<AdditionalFiles Include="../stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Impostor.Api">
+      <HintPath>..\..\..\..\..\..\src\Impostor.Api\bin\Debug\netstandard2.1\Impostor.Api.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

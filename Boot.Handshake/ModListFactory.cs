@@ -1,4 +1,4 @@
-// <copyright file="PluginStartup.cs" company="miniduikboot">
+// <copyright file="ModListFactory.cs" company="miniduikboot">
 // This file is part of Boot.Handshake.
 //
 // Boot.Handshake is free software: you can redistribute it and/or modify
@@ -17,33 +17,29 @@
 
 namespace Boot.Handshake
 {
-	using Boot.Handshake.Handlers;
-	using Impostor.Api.Events;
-	using Impostor.Api.Plugins;
+	using System;
 	using Microsoft.Extensions.DependencyInjection;
-	using Microsoft.Extensions.Hosting;
 
-	/**
-	 * <summary>
-	 * Register all EventListeners.
-	 * </summary>
-	  */
-	internal class PluginStartup : IPluginStartup
+	/// <summary>
+	/// Creates instances of the ModList class.
+	/// </summary>
+	public class ModListFactory
 	{
-		/// <inheritdoc/>
-		public void ConfigureHost(IHostBuilder host)
+		private readonly IServiceProvider serviceProvider;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ModListFactory"/> class.
+		/// </summary>
+		/// <param name="serviceProvider">The service provider for the current container.</param>
+		public ModListFactory(IServiceProvider serviceProvider)
 		{
-			// Method intentionally left empty.
+			this.serviceProvider = serviceProvider;
 		}
 
-		/// <inheritdoc/>
-		public void ConfigureServices(IServiceCollection services)
+		/// <inheritdoc cref="ModList"/>
+		public ModList Create(int length)
 		{
-			services.AddSingleton<ModListFactory>();
-			services.AddSingleton<IEventListener, ClientEventListener>();
-			services.AddSingleton<IEventListener, GameEventListener>();
-			services.AddSingleton<ModListManager>();
-			services.AddSingleton<ReactorRootMessage>();
+			return ActivatorUtilities.CreateInstance<ModList>(this.serviceProvider, length);
 		}
 	}
 }

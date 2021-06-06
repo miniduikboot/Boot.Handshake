@@ -21,25 +21,39 @@ namespace Boot.Handshake
 	using System.Collections.Concurrent;
 	using System.Diagnostics.CodeAnalysis;
 	using Boot.Handshake.Enums;
+	using Boot.Handshake.Extensions;
+	using Microsoft.Extensions.Logging;
 
 	/// <summary>
 	/// List of mods declared by the client using the handshake.
 	/// </summary>
 	public class ModList
 	{
-		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
-		private readonly ConcurrentDictionary<string, ClientMod> idToMod = new();
-		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
-		private readonly ConcurrentDictionary<uint, ClientMod> netIdToMod = new();
+		/// <summary>
+		/// Converts a mod ID string to the class. This mod ID is provided in the handshake.
+		/// </summary>
+		private readonly ConcurrentDictionary<string, ClientMod> idToMod = new ();
+
+		/// <summary>
+		/// Converts a netID to the class. This net ID is provided by the client.
+		/// </summary>
+		private readonly ConcurrentDictionary<uint, ClientMod> netIdToMod = new ();
+
+		/// <summary>
+		/// The number of mods in the list.
+		/// </summary>
 		private readonly int length;
+		private readonly ILogger<ModList> logger;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ModList"/> class.
 		/// </summary>
 		/// <param name="length">The amount of mods that are expected to be declared.</param>
-		public ModList(int length)
+		/// <param name="logger">Logger for the current class.</param>
+		public ModList(int length, ILogger<ModList> logger)
 		{
 			this.length = length;
+			this.logger = logger;
 		}
 
 		/// <summary>
@@ -53,20 +67,10 @@ namespace Boot.Handshake
 			if (!this.idToMod.TryAdd(mod.Id, mod))
 			{
 				// Reactor currently registers every mod twice, if they're identical, ignore the second registration attempt.
-				if (this.idToMod[mod.Id].Equals(mod))
-				{
-					return null;
-				}
-
-				return $"<color=\"red\">Error BHS01:</color> Mod {mod.Id} was already registered.";
+				return this.idToMod[mod.Id].Equals(mod) ? null : ErrorCode.BHS01.GetClientMessage(mod.Id);
 			}
 
-			if (!this.netIdToMod.TryAdd(mod.NetId, mod))
-			{
-				return $"<color=\"red\">Error BHS02:</color> Could not register {mod.Id} as mod {mod.Id} already used netId {mod.NetId}.";
-			}
-
-			return null;
+			return !this.netIdToMod.TryAdd(mod.NetId, mod) ? ErrorCode.BHS02.GetClientMessage(mod.Id, mod.Id, mod.NetId) : null;
 		}
 
 		/// <summary>
@@ -79,50 +83,60 @@ namespace Boot.Handshake
 		}
 
 		/// <summary>
-		/// <para>Checks if this modlist is compatible with another modlist.</para>
+		/// <para>Checks if this mod list is compatible with another mod list.</para>
 		/// <para>Note that client-only mods are allowed to be in either list.</para>
 		/// </summary>
-		/// <param name="host">The other modlist to check.</param>
-		/// <param name="reason">If failed, this is the user-displayable reason why.</param>
-		/// <returns>true iff all elements of this list are in the other list.</returns>
-		public bool IsCompatibleWith(ModList host, out string? reason)
+		/// <param name="hostModList">The other mod list to check.</param>
+		/// <param name="reason">If failed, this is the formatted error message that is to be sent to the player.</param>
+		/// <returns>true if all elements of this list are in the other list.</returns>
+		public bool IsCompatibleWith(ModList hostModList, out string reason)
 		{
-			foreach (ClientMod m in this.idToMod.Values)
+			foreach (var mod in this.idToMod.Values)
 			{
-				Console.WriteLine($"testing {m.Id}");
-				if (m.Side == ReactorPluginSide.ClientOnly)
+				this.logger.LogDebug("Testing client \"{modId}\" for compatibility.", mod.Id);
+
+				if (mod.Side == ReactorPluginSide.ClientOnly)
 				{
-					Console.WriteLine("skipping");
+					this.logger.LogDebug("Skipping client only mod \"{name}\".", mod.Id);
 					continue; // Client mods are okay to use on servers.
 				}
 
-				if (host.idToMod.TryGetValue(m.Id, out ClientMod? otherMod))
+				if (hostModList.idToMod.TryGetValue(mod.Id, out var otherMod))
 				{
-					Console.WriteLine("version check");
-					if (m.Version != otherMod.Version)
+					if (mod.Version == otherMod.Version)
 					{
-						reason = $"<color=\"red\">Error BHS22:</color> Version of {m.Id} does not match: you have {m.Version}, host has {otherMod.Version}";
-						return false;
+						continue;
 					}
-				}
-				else
-				{
-					reason = $"<color=\"red\">Error BHS20:</color> Host does not have a mod called {m.Id}";
+
+					this.logger.LogDebug(
+						"BHS22: Version check for {modId} failed ({modIdVersion} is not {otherModVersion}).", mod.Id, mod.Version, otherMod.Version);
+
+					reason = ErrorCode.BSH22.GetClientMessage(mod.Id, mod.Version, otherMod.Version);
 					return false;
 				}
+
+				// the client has a mod, but the host does not have it.
+				this.logger.LogDebug("BHS20: Host does not have a mod called {modId}", mod.Id);
+				reason = ErrorCode.BHS20.GetClientMessage(mod.Id);
+				return false;
 			}
 
-			foreach (ClientMod mod in host.idToMod.Values)
+			foreach (var hostMod in hostModList.idToMod.Values)
 			{
-				Console.WriteLine($"testing {mod.Id} for host");
-				if (mod.Side != ReactorPluginSide.ClientOnly && !this.idToMod.ContainsKey(mod.Id))
+				this.logger.LogDebug("Testing host {modId} for compatibility.", hostMod.Id);
+
+				if (hostMod.Side == ReactorPluginSide.ClientOnly || this.idToMod.ContainsKey(hostMod.Id))
 				{
-					reason = $"<color=\"red\">Error BHS21:</color> You are missing a mod called {mod.Id}";
-					return false;
+					continue;
 				}
+
+				// the host has a mod, but the client does not.
+				this.logger.LogDebug("BHS21: missing {modId}", hostMod.Id);
+				reason = ErrorCode.BHS21.GetClientMessage(hostMod.Id);
+				return false;
 			}
 
-			reason = null;
+			reason = string.Empty;
 			return true;
 		}
 	}

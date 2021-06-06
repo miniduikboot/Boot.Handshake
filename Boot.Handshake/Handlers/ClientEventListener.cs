@@ -17,6 +17,7 @@
 
 namespace Boot.Handshake.Handlers
 {
+	using System;
 	using System.Collections.Concurrent;
 	using System.Diagnostics.CodeAnalysis;
 	using Boot.Handshake.Messages;
@@ -25,6 +26,7 @@ namespace Boot.Handshake.Handlers
 	using Impostor.Api.Net;
 	using Impostor.Api.Net.Messages;
 	using Impostor.Api.Utils;
+	using Microsoft.Extensions.DependencyInjection;
 	using Microsoft.Extensions.Logging;
 
 	/// <summary>
@@ -36,6 +38,7 @@ namespace Boot.Handshake.Handlers
 		private readonly ILogger logger;
 		private readonly IMessageWriterProvider writerProvider;
 		private readonly ModListManager listManager;
+		private readonly ModListFactory listFactory;
 
 		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:KeywordsMustBeSpacedCorrectly", Justification = "Stylecop documentation does not match implementation")]
 		private readonly ConcurrentDictionary<IHazelConnection, int> announcedMods = new();
@@ -47,12 +50,14 @@ namespace Boot.Handshake.Handlers
 		/// <param name="logger">Register a Logger.</param>
 		/// <param name="writerProvider">Get the MessageWriter pool.</param>
 		/// <param name="listManager">Get the Mod List Manager.</param>
-		public ClientEventListener(IServerEnvironment environment, ILogger<ClientEventListener> logger, IMessageWriterProvider writerProvider, ModListManager listManager)
+		/// <param name="listFactory">Get the Mod List Factory.</param>
+		public ClientEventListener(IServerEnvironment environment, ILogger<ClientEventListener> logger, IMessageWriterProvider writerProvider, ModListManager listManager, ModListFactory listFactory)
 		{
 			this.environment = environment;
 			this.logger = logger;
 			this.writerProvider = writerProvider;
 			this.listManager = listManager;
+			this.listFactory = listFactory;
 		}
 
 		/// <summary>
@@ -99,7 +104,7 @@ namespace Boot.Handshake.Handlers
 		{
 			if (this.announcedMods.TryRemove(ev.Connection, out var modCount))
 			{
-				_ = this.listManager.Add(ev.Client, new ModList(modCount));
+				_ = this.listManager.Add(ev.Client, this.listFactory.Create(modCount));
 			}
 		}
 	}

@@ -61,14 +61,14 @@ namespace Boot.Handshake
 					var mod = new ClientMod(netId, id, version, side);
 					this.logger.LogInformation("Mod: {@Mod}", mod);
 
-					var modlist = this.modlists.Get(client);
-					if (modlist == null)
+					var modList = this.modlists.Get(client);
+					if (modList == null)
 					{
 						await client.DisconnectAsync(DisconnectReason.Custom, "<color=\"red\">Error BHS03:</color> Cannot accept mod declarations when initial handshake was not made").ConfigureAwait(false);
 						break;
 					}
 
-					var failureReason = modlist.RegisterMod(mod);
+					var failureReason = modList.RegisterMod(mod);
 					if (failureReason != null)
 					{
 						await client.DisconnectAsync(DisconnectReason.Custom, failureReason).ConfigureAwait(false);

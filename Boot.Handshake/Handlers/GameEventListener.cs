@@ -17,9 +17,12 @@
 
 namespace Boot.Handshake.Handlers
 {
+	using Boot.Handshake.Enums;
+	using Boot.Handshake.Extensions;
 	using Impostor.Api.Events;
 	using Impostor.Api.Games;
 	using Microsoft.Extensions.Logging;
+	using Microsoft.Extensions.Logging.Abstractions;
 
 	/// <summary>
 	/// Check if mod list is correct when players are joining.
@@ -48,9 +51,9 @@ namespace Boot.Handshake.Handlers
 		public void OnGamePlayerJoining(IGamePlayerJoiningEvent ev)
 		{
 			var client = ev.Player.Client;
-			var myList = this.listManager.Get(client);
+			var playerList = this.listManager.Get(client);
 
-			if (myList?.IsComplete() == false)
+			if (playerList?.IsComplete() == false)
 			{
 				this.logger.LogError("Joining, but modlist is not complete yet!");
 			}
@@ -63,23 +66,28 @@ namespace Boot.Handshake.Handlers
 
 			var hostList = this.listManager.Get(ev.Game.Host.Client);
 
-			// Check if host and players either both have mods or both don't have mods
 			if (hostList == null)
 			{
-				if (myList != null)
+				if (playerList != null)
 				{
-					ev.JoinResult = GameJoinResult.CreateCustomError("<color=\"red\">Error BHS10:</color> Sorry, you cannot join an unmodded lobby with mods.");
+					// The host is not modded, while the client is.
+					ev.JoinResult = ErrorCode.BHS10.GetJoinResult();
 				}
+
+				// else, none of the players are modded.
 			}
 			else
 			{
-				if (myList == null)
+				if (playerList == null)
 				{
-					ev.JoinResult = GameJoinResult.CreateCustomError("<color=\"red\">Error BHS11:</color> Sorry, you cannot join a modded lobby without mods.");
+					// The host is modded, while the client is not.
+					ev.JoinResult = ErrorCode.BHS11.GetJoinResult();
 				}
-				else if (!myList.IsCompatibleWith(hostList, out var reason))
+				else if (!playerList.IsCompatibleWith(hostList, out var reason))
 				{
-					ev.JoinResult = GameJoinResult.CreateCustomError(reason!);
+					// the mods are incompatible, either because the mod lists do not contain the same mods,
+					// or because one or more mods are of different versions.
+					ev.JoinResult = GameJoinResult.CreateCustomError(reason);
 				}
 			}
 		}
