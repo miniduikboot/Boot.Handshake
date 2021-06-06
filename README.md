@@ -22,7 +22,7 @@ If you are a mod developer, make sure your Mod's ID is unique: it is recommended
 
 ### BHS10 Sorry, you cannot join an non-modded lobby with mods
 
-The people you are playing with are not using mods. If you still want to play with them, deinstall your mods and restart your game.
+The people you are playing with are not using mods. If you still want to play in this lobby, uninstall your mods and restart your game.
 
 ### BHS11 Sorry, you cannot join a modded lobby without mods
 
