@@ -139,5 +139,25 @@ namespace Boot.Handshake
 			reason = string.Empty;
 			return true;
 		}
+
+		/// <summary>
+		/// Get the client mod with a given network id.
+		/// </summary>
+		/// <param name="netId">The network id to get a mod from.</param>
+		/// <returns>The client mod if one is present, otherwise null.</returns>
+		public ClientMod? MapNetId(uint netId)
+		{
+			return this.netIdToMod.TryGetValue(netId, out var clientMod) ? clientMod : null;
+		}
+
+		/// <summary>
+		/// Get the client mod with a given string id.
+		/// </summary>
+		/// <param name="id">The id to get a mod from.</param>
+		/// <returns>The client mod if one is present, otherwise null.</returns>
+		public ClientMod? MapId(string id)
+		{
+			return this.idToMod.TryGetValue(id, out var clientMod) ? clientMod : null;
+		}
 	}
 }

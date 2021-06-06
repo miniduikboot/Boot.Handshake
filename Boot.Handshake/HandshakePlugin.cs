@@ -29,22 +29,33 @@ namespace Boot.Handshake
 	{
 		private readonly ICustomMessageManager<ICustomRootMessage> rootMessageManager;
 		private readonly ReactorRootMessage reactorRootMessage;
+		private readonly ICustomMessageManager<ICustomRpc> rpcManager;
+		private readonly ReactorRpc reactorRpc;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="HandshakePlugin"/> class.
 		/// </summary>
 		/// <param name="rootMessageManager">Manager of the Root Messages.</param>
 		/// <param name="reactorRootMessage">The root message we want to register.</param>
-		public HandshakePlugin(ICustomMessageManager<ICustomRootMessage> rootMessageManager, ReactorRootMessage reactorRootMessage)
+		/// <param name="rpcManager">Manager of the RPC's.</param>
+		/// <param name="reactorRpc">The custom RPC we want to register.</param>
+		public HandshakePlugin(
+			ICustomMessageManager<ICustomRootMessage> rootMessageManager,
+			ReactorRootMessage reactorRootMessage,
+			ICustomMessageManager<ICustomRpc> rpcManager,
+			ReactorRpc reactorRpc)
 		{
 			this.rootMessageManager = rootMessageManager;
 			this.reactorRootMessage = reactorRootMessage;
+			this.rpcManager = rpcManager;
+			this.reactorRpc = reactorRpc;
 		}
 
 		/// <inheritdoc/>
 		public override ValueTask EnableAsync()
 		{
 			_ = this.rootMessageManager.Register(this.reactorRootMessage);
+			_ = this.rpcManager.Register(this.reactorRpc);
 			return default;
 		}
 	}

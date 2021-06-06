@@ -44,6 +44,7 @@ namespace Boot.Handshake
 			services.AddSingleton<IEventListener, GameEventListener>();
 			services.AddSingleton<ModListManager>();
 			services.AddSingleton<ReactorRootMessage>();
+			services.AddSingleton<ReactorRpc>();
 		}
 	}
 }
