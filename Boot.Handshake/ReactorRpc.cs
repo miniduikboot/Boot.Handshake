@@ -17,6 +17,7 @@
 
 namespace Boot.Handshake
 {
+	using System;
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
 	using Boot.Handshake.Enums;
@@ -75,47 +76,66 @@ namespace Boot.Handshake
 				return false;
 			}
 
-			this.logger.LogInformation(
-				"{Sender} sent RRPC {SenderNetId} to {Target}, length {Len}",
+			this.logger.LogDebug(
+				"{Sender} sent Reactor Custom RPC {SenderNetId}:{modRpcId} to {Target}, length {Len}",
 				sender.Character?.PlayerInfo.PlayerName,
 				senderNetId,
 				target,
-				reader.Length - reader.Position);
+				msgLength);
 
-			var game = innerNetObject.Game;
-
-			var tasks = new List<Task>();
-			foreach (var player in game.Players)
+			void FillRpc(IMessageWriter writer)
 			{
-				if (player == sender)
-				{
-					continue; // Don't echo back RPC's to the sender
-				}
-
-				var playerList = this.listManager.Get(player.Client);
-				if (playerList == null)
-				{
-					continue;
-				}
-
-				var playerMod = playerList.MapId(mod.Id);
-				if (playerMod == null)
-				{
-					continue;
-				}
-
-				var writer = game.StartRpc(innerNetObject.NetId, (RpcCalls)this.Id, target?.Client.Id);
-				writer.WritePacked(playerMod.NetId);
 				writer.WritePacked(modRpcId);
 				writer.Write(msgLength);
 				writer.Write(msgData);
-				tasks.Add(game.FinishRpcAsync(writer, player.Client.Id).AsTask());
 			}
 
-			await Task.WhenAll(tasks).ConfigureAwait(false);
+			if (target == null)
+			{
+				// Broadcast this RPC to all players
+				var tasks = new List<Task>();
+				foreach (var player in innerNetObject.Game.Players)
+				{
+					if (player == sender)
+					{
+						continue; // Don't echo back RPC's to the sender
+					}
+
+					tasks.Add(this.SendRpcTo(innerNetObject, target, player, mod.Id, FillRpc));
+				}
+
+				await Task.WhenAll(tasks).ConfigureAwait(false);
+			}
+			else
+			{
+				// Only send this to the intended player
+				await this.SendRpcTo(innerNetObject, target, target, mod.Id, FillRpc).ConfigureAwait(false);
+			}
 
 			// Don't send out the original RPC
 			return false;
+		}
+
+		private Task SendRpcTo(IInnerNetObject innerNetObject, IClientPlayer? target, IClientPlayer receiver, string id, Action<IMessageWriter> fillRpc)
+		{
+			var receiverList = this.listManager.Get(receiver.Client);
+			if (receiverList == null)
+			{
+				return Task.CompletedTask;
+			}
+
+			var receiverMod = receiverList.MapId(id);
+			if (receiverMod == null)
+			{
+				return Task.CompletedTask;
+			}
+
+			var game = innerNetObject.Game;
+
+			var writer = game.StartRpc(innerNetObject.NetId, (RpcCalls)this.Id, target?.Client.Id);
+			writer.WritePacked(receiverMod.NetId);
+			fillRpc(writer);
+			return game.FinishRpcAsync(writer, receiver.Client.Id).AsTask();
 		}
 	}
 }
