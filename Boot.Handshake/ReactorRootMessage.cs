@@ -60,7 +60,7 @@ namespace Boot.Handshake
 				case ReactorMessageTypes.ModDeclaration:
 					ModDeclarationMessage.Deserialize(reader, out var netId, out var id, out var version, out var side);
 					var mod = new ClientMod(netId, id, version, side);
-					this.logger.LogInformation("Mod: {@Mod}", mod);
+					this.logger.LogDebug("Mod: {@Mod}", mod);
 
 					var modList = this.modlists.Get(client);
 					if (modList == null)
