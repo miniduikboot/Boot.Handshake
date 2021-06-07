@@ -86,8 +86,9 @@ namespace Boot.Handshake
 			if (target == null)
 			{
 				this.logger.LogDebug(
-					"{Sender} broadcasted Reactor Custom RPC {SenderNetId}:{modRpcId}, length {Length}",
+					"{Sender} broadcasted Reactor Custom RPC {modId}@{SenderNetId}:{modRpcId}, length {Length}",
 					sender.Character?.PlayerInfo.PlayerName,
+					mod.Id,
 					senderNetId,
 					modRpcId,
 					msgLength);
@@ -109,8 +110,9 @@ namespace Boot.Handshake
 			else
 			{
 				this.logger.LogDebug(
-					"{Sender} sent Reactor Custom RPC {SenderNetId}:{modRpcId} to {Target}, length{Length}",
+					"{Sender} sent Reactor Custom RPC {modId}@{SenderNetId}:{modRpcId} to {Target}, length {Length}",
 					sender.Character?.PlayerInfo.PlayerName,
+					mod.Id,
 					senderNetId,
 					modRpcId,
 					target.Character?.PlayerInfo.PlayerName,

@@ -53,11 +53,6 @@ namespace Boot.Handshake.Handlers
 			var client = ev.Player.Client;
 			var playerList = this.listManager.Get(client);
 
-			this.logger.LogInformation(
-				"{Player} sent the following mod declarations: {Mods}",
-				client.Name,
-				playerList);
-
 			if (playerList?.IsComplete() == false)
 			{
 				this.logger.LogError("Joining, but modlist is not complete yet!");
@@ -71,22 +66,28 @@ namespace Boot.Handshake.Handlers
 
 			var hostList = this.listManager.Get(ev.Game.Host.Client);
 
-			if (hostList == null)
+			if (playerList == null)
 			{
-				if (playerList != null)
-				{
-					// The host is not modded, while the client is.
-					ev.JoinResult = ErrorCode.BHS10.GetJoinResult();
-				}
-
-				// else, none of the players are modded.
-			}
-			else
-			{
-				if (playerList == null)
+				if (hostList != null)
 				{
 					// The host is modded, while the client is not.
 					ev.JoinResult = ErrorCode.BHS11.GetJoinResult();
+				}
+
+				// otherwise none of the players are modded.
+			}
+			else
+			{
+				this.logger.LogInformation(
+					"{Player} ({Id}) sent the following mod declarations: {Mods}",
+					client.Name,
+					client.Id,
+					playerList);
+
+				if (hostList == null)
+				{
+					// The host is not modded, while the client is.
+					ev.JoinResult = ErrorCode.BHS10.GetJoinResult();
 				}
 				else if (!playerList.IsCompatibleWith(hostList, out var reason))
 				{
@@ -94,6 +95,8 @@ namespace Boot.Handshake.Handlers
 					// or because one or more mods are of different versions.
 					ev.JoinResult = GameJoinResult.CreateCustomError(reason);
 				}
+
+				// otherwise all players have the same mod list and can play together safely.
 			}
 		}
 	}
