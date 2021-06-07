@@ -53,6 +53,11 @@ namespace Boot.Handshake.Handlers
 			var client = ev.Player.Client;
 			var playerList = this.listManager.Get(client);
 
+			this.logger.LogInformation(
+				"{Player} sent the following mod declarations: {Mods}",
+				client.Name,
+				playerList);
+
 			if (playerList?.IsComplete() == false)
 			{
 				this.logger.LogError("Joining, but modlist is not complete yet!");
