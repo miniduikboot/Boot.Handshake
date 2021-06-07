@@ -76,13 +76,6 @@ namespace Boot.Handshake
 				return false;
 			}
 
-			this.logger.LogDebug(
-				"{Sender} sent Reactor Custom RPC {SenderNetId}:{modRpcId} to {Target}, length {Len}",
-				sender.Character?.PlayerInfo.PlayerName,
-				senderNetId,
-				target,
-				msgLength);
-
 			void FillRpc(IMessageWriter writer)
 			{
 				writer.WritePacked(modRpcId);
@@ -92,6 +85,13 @@ namespace Boot.Handshake
 
 			if (target == null)
 			{
+				this.logger.LogDebug(
+					"{Sender} broadcasted Reactor Custom RPC {SenderNetId}:{modRpcId}, length {Length}",
+					sender.Character?.PlayerInfo.PlayerName,
+					senderNetId,
+					modRpcId,
+					msgLength);
+
 				// Broadcast this RPC to all players
 				var tasks = new List<Task>();
 				foreach (var player in innerNetObject.Game.Players)
@@ -108,6 +108,14 @@ namespace Boot.Handshake
 			}
 			else
 			{
+				this.logger.LogDebug(
+					"{Sender} sent Reactor Custom RPC {SenderNetId}:{modRpcId} to {Target}, length{Length}",
+					sender.Character?.PlayerInfo.PlayerName,
+					senderNetId,
+					modRpcId,
+					target.Character?.PlayerInfo.PlayerName,
+					msgLength);
+
 				// Only send this to the intended player
 				await this.SendRpcTo(innerNetObject, target, target, mod.Id, FillRpc).ConfigureAwait(false);
 			}
