@@ -46,6 +46,10 @@ One of your mods has a different version compared to that of the host. Update yo
 
 ### BSH31 Unregistered mod X cannot send Custom RPC's
 
+One of your mods has sent a Custom RPC, but it's not allowed to do so as it is a client side mod.
+
+Contact the developer of the mod and tell them to define the side of the mod as "Both": this will also ensure that all players have the mod installed.
+
 ### Other error codes (BHS02, BHS03, BHS30)
 
 These error codes shouldn't occur and indicate a bug in your client's implementation of the protocol. Contact miniduikboot if you need help with this error code.
@@ -53,3 +57,8 @@ These error codes shouldn't occur and indicate a bug in your client's implementa
 ## Showcase
 
 ![](resources/errors.png)
+
+## Credits
+
+- Thanks to Daemon for helping out with the targeted RPC issue
+- Thanks to empireu for refactoring my error message system
