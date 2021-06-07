@@ -77,10 +77,11 @@ namespace Boot.Handshake
 			}
 
 			this.logger.LogDebug(
-				"{Sender} sent Reactor Custom RPC {SenderNetId}:{modRpcId} to {Target}, length {Len}",
+				"{Sender} ({SenderNetId}) sent Reactor Custom RPC ({modRpcId}) to {Target}, length {Len}",
 				sender.Character?.PlayerInfo.PlayerName,
 				senderNetId,
-				target,
+				modRpcId,
+				target?.Client.Name ?? "everyone",
 				msgLength);
 
 			void FillRpc(IMessageWriter writer)
