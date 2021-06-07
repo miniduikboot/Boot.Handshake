@@ -75,5 +75,11 @@ namespace Boot.Handshake
 		{
 			return HashCode.Combine(this.NetId, this.Id, this.Version, this.Side);
 		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return $"{this.Id} {this.Version} ({this.NetId}) ({this.Side})";
+		}
 	}
 }

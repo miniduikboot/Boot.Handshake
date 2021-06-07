@@ -157,5 +157,11 @@ namespace Boot.Handshake
 		{
 			return this.idToMod.TryGetValue(id, out var clientMod) ? clientMod : null;
 		}
+
+		/// <inheritdoc/>
+		public override string ToString()
+		{
+			return string.Join(", ", this.idToMod.Values);
+		}
 	}
 }
