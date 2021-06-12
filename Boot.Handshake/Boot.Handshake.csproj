@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
     <Description>Perform Reactor Handshake</Description>
     <Authors>miniduikboot</Authors>
-		<Version>0.1</Version>
+		<Version>0.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
